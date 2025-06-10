@@ -1,5 +1,9 @@
 // netlify/functions/chat.js
-const fetch = require('node-fetch');
+exports.handler = async (event) => {
+  // … same code, just drop the require …
+  const res = await fetch('https://api.openai.com/v1/chat/completions', { … });
+  // …
+};
 
 // System prompts for each botId
 const BOT_PROMPTS = {
