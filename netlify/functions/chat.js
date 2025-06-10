@@ -1,11 +1,4 @@
-// netlify/functions/chat.js
-exports.handler = async (event) => {
-  // … same code, just drop the require …
-  const res = await fetch('https://api.openai.com/v1/chat/completions', { … });
-  // …
-};
-
-// System prompts for each botId
+<!-- netlify/functions/chat.js -->
 const BOT_PROMPTS = {
   'brand-identity': 'System: Define your brand’s core vision...',
   'target-audience': 'System: Identify your ideal customers...',
@@ -25,10 +18,10 @@ exports.handler = async (event) => {
       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
     },
     body: JSON.stringify({
-      model: 'gpt-4o',  // or your deployment name
+      model: 'gpt-4o',
       messages: [
-        { role: 'system',  content: BOT_PROMPTS[botId] },
-        { role: 'user',    content: message }
+        { role: 'system', content: BOT_PROMPTS[botId] },
+        { role: 'user',   content: message }
       ]
     })
   });
