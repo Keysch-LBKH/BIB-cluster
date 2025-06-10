@@ -1,0 +1,87 @@
+<!-- chat.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; }
+    #chat { flex: 1; padding: 10px; overflow-y: auto; border-bottom: 1px solid #ccc; }
+    #input-container { display: flex; }
+    #message { flex: 1; padding: 10px; border: none; }
+    #send, #finish { padding: 10px; border: none; cursor: pointer; }
+    .msg { margin: 5px 0; }
+    .user { text-align: right; font-weight: bold; }
+    .bot { text-align: left; color: #555; }
+  </style>
+</head>
+<body>
+  <div id="chat"></div>
+  <div id="input-container">
+    <input id="message" type="text" placeholder="Type your message..." />
+    <button id="send">Send</button>
+    <button id="finish">Finish</button>
+  </div>
+  <script>
+    // Pull bot ID from query params
+    const params = new URLSearchParams(location.search);
+    const botId = params.get('bot');
+
+    // *** INSERT YOUR API ENDPOINT HERE ***
+    const apiUrl = 'https://boldlogic.io/.netlify/functions/chat';
+
+    const chatEl = document.getElementById('chat');
+    const inputEl = document.getElementById('message');
+    const sendBtn = document.getElementById('send');
+    const finishBtn = document.getElementById('finish');
+
+    function getSystemPrompt(id) {
+      const prompts = {
+        'brand-identity': 'System: Define your brand’s core vision...',
+        'target-audience': 'System: Identify your ideal customers...',
+        'brand-voice': 'System: Craft your brand tone and voice...',
+        'visual-style': 'System: Outline your visual identity...',
+        'artist-wiki': 'System: Build your artist wiki with key bio & style details...',
+        'boldlocal-gbp': 'System: Optimize your Google Business Profile for local reach...'
+      };
+      return prompts[id] || 'System: Ready to chat.';
+    }
+
+    function appendMessage(text, sender) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + sender;
+      div.textContent = text;
+      chatEl.appendChild(div);
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    async function init() {
+      appendMessage(getSystemPrompt(botId), 'bot');
+    }
+
+    async function sendMessage() {
+      const userMsg = inputEl.value.trim();
+      if (!userMsg) return;
+      appendMessage(userMsg, 'user');
+      inputEl.value = '';
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ botId, message: userMsg })
+      });
+      const { reply } = await response.json();
+      appendMessage(reply, 'bot');
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    inputEl.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+    finishBtn.addEventListener('click', () => {
+      parent.postMessage({ type: 'botCompleted', botId }, '*');
+    });
+
+    init();
+  </script>
+</body>
+</html>

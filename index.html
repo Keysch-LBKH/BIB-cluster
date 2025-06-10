@@ -1,0 +1,109 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPT Brand Blueprint</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+    ul { list-style: none; padding: 0; width: 100%; max-width: 600px; }
+    li { padding: 10px 15px; margin: 5px 0; border-radius: 5px; cursor: pointer; }
+    .locked { background: #f0f0f0; color: #999; cursor: not-allowed; }
+    .active { background: #e0f7e9; }
+    .completed { background: #d9edf7; text-decoration: line-through; }
+    iframe { width: 100%; height: 600px; border: none; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Brand Identity Blueprint</h2>
+  <ul id="bot-list"></ul>
+  <iframe id="chatFrame"></iframe>
+
+  <script>
+    // Define your five flows and where each should point (either local chat.html or a GPT URL)
+    const bots = [
+      {
+        id: 'brand-identity',
+        name: '1. Brand Guide',
+        // insert your custom GPT URL here if using Hosted GPT:
+        url: 'https://chatgpt.com/g/g-6847ac7d9d788191bf1be93a1b9ae507-boldbooking-brand-clarity-coach-for-tattooers'
+      },
+      {
+        id: 'target-audience',
+        name: '2. Target Audience',
+        url: 'https://chatgpt.com/g/g-6847a9f7be188191a247f13fbef7343c-boldbooking-dream-client-discovery'
+      },
+      {
+        id: 'brand-voice',
+        name: '3. Brand Voice',
+        url: 'https://chatgpt.com/g/g-67cf850051cc81918bdfcb3ce445209f-brand-building-bud'
+      },
+      {
+        id: 'visual-style',
+        name: '4. Visual Style',
+        url: 'https://chatgpt.com/g/g-6847a17450188191856cd577ada96339-boldbooking-visual-style-builder-for-scab-jockeys'
+      },
+      {
+        id: 'artist-wiki',
+        name: '5. Artist Wiki',
+        url: 'https://chatgpt.com/g/g-6816c462e78c81919cf0b202f413939f-boldbooking-tattoo-artist-wiki-helper'
+      }
+      {
+        id: 'boldlocal-gbp',
+        name: '6. Google Business Profile',
+        url: 'https://chatgpt.com/g/g-6831f4e757088191be6dbb0d6c101994-boldlocal-pro-gbp'
+      }
+    ];
+
+    const frame = document.getElementById('chatFrame');
+    const listEl = document.getElementById('bot-list');
+    let state = JSON.parse(localStorage.getItem('botState') || '{}');
+    state.completed = state.completed || [];
+
+    function saveState() {
+      localStorage.setItem('botState', JSON.stringify(state));
+    }
+
+    function renderList() {
+      listEl.innerHTML = '';
+      bots.forEach((bot, idx) => {
+        const li = document.createElement('li');
+        li.textContent = bot.name;
+        const prevDone = idx === 0 || state.completed.includes(bots[idx-1].id);
+        if (state.completed.includes(bot.id)) li.classList.add('completed');
+        else if (!prevDone) li.classList.add('locked');
+        else li.classList.add('active');
+
+        li.addEventListener('click', () => {
+          if (!li.classList.contains('active')) return;
+          loadBot(bot);
+        });
+        listEl.appendChild(li);
+      });
+      const first = listEl.querySelector('li.active');
+      if (first && !frame.src) first.click();
+    }
+
+    function loadBot(bot) {
+      // If a custom GPT URL is provided, go there; otherwise load local chat.html
+      frame.src = bot.url || `chat.html?bot=${bot.id}`;
+    }
+
+    window.addEventListener('message', e => {
+      if (e.data && e.data.type === 'botCompleted') {
+        const completedId = e.data.botId;
+        if (!state.completed.includes(completedId)) {
+          state.completed.push(completedId);
+          saveState();
+          renderList();
+        }
+      }
+    });
+
+    renderList();
+  </script>
+</body>
+</html>
+
+<!-- chat.html remains unchanged -->
